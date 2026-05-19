@@ -8,3 +8,4 @@ st.info('반갑습니다')
 st.warning(b+'음식을 좋아하시나 봐요')
 st.error('잘부탁 드립니다')
 st.ballons()
+
