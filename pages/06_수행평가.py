@@ -3,15 +3,15 @@ import pandas as pd
 import plotly.graph_objects as go
 
 st.set_page_config(
-    page_title="학년별 희망 직업",
-    page_icon="🎓",
+    page_title="지역별 탈북민 현황",
+    page_icon="📊",
     layout="wide"
 )
 
-st.title("🎓 중1 ~ 고3 희망 직업 순위")
+st.title("📊 우리나라 지역별 탈북민 거주 현황")
 
 uploaded_file = st.file_uploader(
-    "희망직업 CSV 업로드",
+    "CSV 파일 업로드",
     type=["csv"]
 )
 
@@ -19,49 +19,41 @@ if uploaded_file is not None:
 
     df = pd.read_csv(uploaded_file)
 
-    grades = [
-        "중1", "중2", "중3",
-        "고1", "고2", "고3"
-    ]
+    df = df.sort_values(
+        by="인원수",
+        ascending=False
+    ).reset_index(drop=True)
 
-    grade = st.selectbox(
-        "학년 선택",
-        grades
-    )
+    df["순위"] = range(1, len(df) + 1)
 
-    grade_df = (
-        df[df["학년"] == grade]
-        .sort_values("순위")
-    )
+    colors = []
 
-    marker_colors = []
-
-    for rank in grade_df["순위"]:
+    for rank in df["순위"]:
 
         if rank == 1:
-            marker_colors.append("#FF69B4")  # 핑크
+            colors.append("#FF69B4")  # 핑크
 
         elif rank == 2:
-            marker_colors.append("#1E90FF")  # 파랑
+            colors.append("#1E90FF")  # 파랑
 
         elif rank == 3:
-            marker_colors.append("#32CD32")  # 초록
+            colors.append("#32CD32")  # 초록
 
         else:
-            marker_colors.append("#B0B0B0")  # 회색
+            colors.append("#B0B0B0")  # 회색
 
     fig = go.Figure()
 
     fig.add_trace(
         go.Scatter(
-            x=grade_df["직업"],
-            y=grade_df["순위"],
+            x=df["지역"],
+            y=df["인원수"],
             mode="lines+markers+text",
-            text=grade_df["순위"],
+            text=df["순위"].astype(str) + "위",
             textposition="top center",
             marker=dict(
                 size=16,
-                color=marker_colors
+                color=colors
             ),
             line=dict(
                 color="#808080",
@@ -71,13 +63,10 @@ if uploaded_file is not None:
     )
 
     fig.update_layout(
-        title=f"{grade} 희망 직업 순위",
-        xaxis_title="직업",
-        yaxis_title="순위",
-        yaxis=dict(
-            autorange="reversed"
-        ),
-        height=600
+        title="지역별 탈북민 거주 인원 순위",
+        xaxis_title="지역",
+        yaxis_title="탈북민 수",
+        height=650
     )
 
     st.plotly_chart(
@@ -85,5 +74,12 @@ if uploaded_file is not None:
         use_container_width=True
     )
 
+    st.subheader("🏆 TOP 10")
+
+    st.dataframe(
+        df[["순위", "지역", "인원수"]],
+        use_container_width=True
+    )
+
 else:
-    st.info("CSV 파일을 업로드하세요.")
+    st.info("지역, 인원수 컬럼이 있는 CSV 파일을 업로드하세요.")
